@@ -1,0 +1,74 @@
+# Health check
+
+GET http://localhost:8080/actuator/health
+
+###
+
+# Obtain a short-living token for OTP
+
+POST http://localhost:8080/oauth/token
+Authorization: Basic otp otp
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&username=user&password=123456&scope=otp
+
+> {%
+  var accessToken = response.body.access_token;
+  client.global.set("accessToken", accessToken);
+  var refreshToken = response.body.refresh_token;
+  client.global.set("refreshToken", refreshToken);
+%}
+
+###
+
+# Ask for sending OTP
+
+PUT http://localhost:8080/otp/me/send
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+> {%
+  var otp = response.body.otp;
+  client.global.set("otp", otp);
+%}
+
+###
+
+# Provide the OTP
+# And obtain a regular long-living tokens
+
+POST http://localhost:8080/otp
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "otp": {{otp}}
+}
+
+> {%
+  var accessToken = response.body.access_token;
+  client.global.set("accessToken", accessToken);
+  var refreshToken = response.body.refresh_token;
+  client.global.set("refreshToken", refreshToken);
+%}
+
+###
+
+# Get some resources
+
+GET http://localhost:8080/api/resources
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+###
+
+# Refresh regular tokens
+
+POST http://localhost:8080/oauth/token
+Authorization: Basic regular regular
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=refresh_token&scope=regular&refresh_token={{refreshToken}}
+
+###
+
