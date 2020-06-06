@@ -4,6 +4,6 @@ A variant of implementation with Spring Boot and [Spring Security OAuth Boot 2 A
 
 ### Flow diagram
 
-![diagram](https://www.websequencediagrams.com/files/render?link=V9x9wIPTRsyC81ChWu78NR3AjRCA88CyWjmgMblSsuMMgDw1GcAXtGJKVUV9ufWZ)
+![diagram](oauth2-mfa-diagram.png)
 
 [Sample requests](api-demo.http)
