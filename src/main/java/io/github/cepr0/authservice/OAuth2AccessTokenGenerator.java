@@ -6,9 +6,13 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerEndpointsConfiguration;
-import org.springframework.security.oauth2.provider.*;
+import org.springframework.security.oauth2.provider.ClientDetailsService;
+import org.springframework.security.oauth2.provider.ClientRegistrationException;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.provider.TokenRequest;
 import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -35,13 +39,19 @@ public class OAuth2AccessTokenGenerator {
 	 *
 	 * @param userDetails User details, must not be null
 	 * @param clientId ID of the client application, must not be null
+	 * @param scopes scope collection, must not be null or empty
 	 * @return {@link OAuth2AccessToken} with access token, refresh token and other related data.
 	 * @throws ClientRegistrationException If the client account is locked, expired, disabled, or invalid for any other reason.
 	 * @throws AuthenticationException If the user credentials are inadequate.
 	 */
-	public OAuth2AccessToken generate(@NonNull UserDetails userDetails, @NonNull String clientId, Collection<String> scopes) throws ClientRegistrationException, AuthenticationException {
+	public OAuth2AccessToken generate(
+			@NonNull UserDetails userDetails,
+			@NonNull String clientId,
+			@NonNull Collection<String> scopes
+	) throws ClientRegistrationException, AuthenticationException {
+		Assert.notEmpty(scopes, "Scopes must contain at least one element");
 		var tokenRequest = new TokenRequest(new HashMap<>(), clientId, scopes, PASSWORD_GRANT_TYPE);
-		ClientDetails client = clientDetailsService.loadClientByClientId(clientId);
+		var client = clientDetailsService.loadClientByClientId(clientId);
 		var authToken = new UsernamePasswordAuthenticationToken(userDetails, userDetails, userDetails.getAuthorities());
 		var authentication = new OAuth2Authentication(tokenRequest.createOAuth2Request(client), authToken);
 		return tokenServices.createAccessToken(authentication);
