@@ -2,6 +2,11 @@
 
 GET http://localhost:8080/actuator/health
 
+> {%
+  client.test("Health check", function() {
+    client.assert(response.status === 200, "Response status is 200");
+  });
+%}
 ###
 
 # Obtain a short-living token for OTP
@@ -17,6 +22,10 @@ grant_type=password&username=user&password=123456&scope=otp
   client.global.set("accessToken", accessToken);
   var refreshToken = response.body.refresh_token;
   client.global.set("refreshToken", refreshToken);
+
+  client.test("Obtain a short-living token for OTP", function() {
+    client.assert(response.status === 200, "Response status is 200");
+  });
 %}
 
 ###
@@ -30,12 +39,16 @@ Accept: application/json
 > {%
   var otp = response.body.otp;
   client.global.set("otp", otp);
+
+  client.test("Ask for sending OTP", function() {
+    client.assert(response.status === 200, "Response status is 200");
+  });
 %}
 
 ###
 
 # Provide the OTP
-# And obtain a regular long-living tokens
+# And obtain regular long-living tokens
 
 POST http://localhost:8080/otp
 Authorization: Bearer {{accessToken}}
@@ -50,6 +63,10 @@ Content-Type: application/json
   client.global.set("accessToken", accessToken);
   var refreshToken = response.body.refresh_token;
   client.global.set("refreshToken", refreshToken);
+
+  client.test("Provide the OTP, obtain regular tokens", function() {
+    client.assert(response.status === 200, "Response status is 200");
+  });
 %}
 
 ###
@@ -59,6 +76,12 @@ Content-Type: application/json
 GET http://localhost:8080/api/resources
 Authorization: Bearer {{accessToken}}
 Accept: application/json
+
+> {%
+  client.test("Get some resources", function() {
+    client.assert(response.status === 200, "Response status is 200");
+  });
+%}
 
 ###
 
@@ -70,5 +93,31 @@ Content-Type: application/x-www-form-urlencoded
 
 grant_type=refresh_token&scope=regular&refresh_token={{refreshToken}}
 
+> {%
+  var accessToken = response.body.access_token;
+  client.global.set("accessToken", accessToken);
+  var refreshToken = response.body.refresh_token;
+  client.global.set("refreshToken", refreshToken);
+
+  client.test("Refresh regular tokens", function() {
+    client.assert(response.status === 200, "Response status is 200");
+  });
+%}
+
 ###
 
+# Trying to get a regular token in the usual way should not work
+
+POST http://localhost:8080/oauth/token
+Authorization: Basic regular regular
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&username=user&password=123456&scope=regular
+
+> {%
+client.test("Can't get a regular access token in the usual way", function() {
+  client.assert(response.status === 401, "Response status is 401");
+});
+%}
+
+###

@@ -38,12 +38,11 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
                 .scopes("otp")
                 .authorizedGrantTypes("password")
                 .accessTokenValiditySeconds(60 * 5) // 5 min
-                .refreshTokenValiditySeconds(60 * 6) // 6 min
-                .and()
+              .and()
                 .withClient("regular")
                 .secret("{noop}regular")
                 .scopes("regular")
-                .authorizedGrantTypes("password", "refresh_token")
+                .authorizedGrantTypes("refresh_token")
                 .accessTokenValiditySeconds(60 * 60) // 1 our
                 .refreshTokenValiditySeconds(60 * 60 * 24 * 30); // 30 days
     }
