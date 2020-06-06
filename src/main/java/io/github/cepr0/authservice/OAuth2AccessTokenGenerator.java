@@ -10,12 +10,10 @@ import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.oauth2.provider.ClientRegistrationException;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.TokenRequest;
-import org.springframework.security.oauth2.provider.client.BaseClientDetails;
 import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
-import java.util.Set;
 
 @Component
 public class OAuth2AccessTokenGenerator {
@@ -47,8 +45,8 @@ public class OAuth2AccessTokenGenerator {
             @NonNull UserDetails userDetails,
             @NonNull String clientId
     ) throws ClientRegistrationException, AuthenticationException {
-        BaseClientDetails client = (BaseClientDetails) clientDetailsService.loadClientByClientId(clientId);
-        Set<String> scopes = client.getScope();
+        var client = clientDetailsService.loadClientByClientId(clientId);
+        var scopes = client.getScope();
         var tokenRequest = new TokenRequest(new HashMap<>(), clientId, scopes, PASSWORD_GRANT_TYPE);
         var authToken = new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
         var authentication = new OAuth2Authentication(tokenRequest.createOAuth2Request(client), authToken);
