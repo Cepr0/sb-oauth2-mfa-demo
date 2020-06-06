@@ -15,7 +15,6 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.validation.Valid;
 import java.time.Instant;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -62,6 +61,6 @@ public class OtpController {
 
         log.info("[i] OTP found: '{}'", foundOtp);
         User user = new User((String) auth.getPrincipal(), "*", auth.getAuthorities());
-        return tokenGenerator.generate(user, "regular", Set.of("regular"));
+        return tokenGenerator.generate(user, "regular");
     }
 }
