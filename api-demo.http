@@ -12,10 +12,10 @@ GET http://localhost:8080/actuator/health
 # Obtain a short-living token for OTP
 
 POST http://localhost:8080/oauth/token
-Authorization: Basic otp otp
+Authorization: Basic client secret
 Content-Type: application/x-www-form-urlencoded
 
-grant_type=phone&phone_number=123456789&scope=otp
+grant_type=phone&phone_number=123456789&scope=*
 
 > {%
   var accessToken = response.body.access_token;
