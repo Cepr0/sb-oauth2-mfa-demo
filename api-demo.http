@@ -15,7 +15,7 @@ POST http://localhost:8080/oauth/token
 Authorization: Basic otp otp
 Content-Type: application/x-www-form-urlencoded
 
-grant_type=password&username=user&password=123456&scope=otp
+grant_type=phone&phone_number=123456789&scope=otp
 
 > {%
   var accessToken = response.body.access_token;

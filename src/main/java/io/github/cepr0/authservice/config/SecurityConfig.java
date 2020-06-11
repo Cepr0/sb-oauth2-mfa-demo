@@ -1,5 +1,6 @@
 package io.github.cepr0.authservice.config;
 
+import io.github.cepr0.authservice.repo.CustomerRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -8,11 +9,19 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+    public static final String ROLE = "PRE_AUTH";
+    private final CustomerRepo customerRepo;
+
+    public SecurityConfig(CustomerRepo customerRepo) {
+        this.customerRepo = customerRepo;
+    }
 
     @Bean
     @Override
@@ -23,11 +32,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(
-                username -> User.withUsername("user")
-                        .password("{noop}123456")
-                        .roles("USER")
-                        .build()
+        auth.userDetailsService(phoneNumber -> customerRepo.getByPhoneNumber(phoneNumber)
+                .map(customer -> User.withUsername(phoneNumber).password("{noop}N/A").roles(ROLE).build())
+                .orElseThrow(() -> new UsernameNotFoundException("Customer not found"))
         );
     }
 

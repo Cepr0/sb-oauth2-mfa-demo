@@ -1,5 +1,6 @@
 package io.github.cepr0.authservice.config;
 
+import io.github.cepr0.authservice.grant.PhoneGrant;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -8,13 +9,17 @@ import org.springframework.security.oauth2.config.annotation.configurers.ClientD
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
+import org.springframework.security.oauth2.provider.CompositeTokenGranter;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.provider.TokenGranter;
 import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -36,9 +41,9 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
                 .withClient("otp")
                 .secret("{noop}otp")
                 .scopes("otp")
-                .authorizedGrantTypes("password")
+                .authorizedGrantTypes("phone")
                 .accessTokenValiditySeconds(60 * 5) // 5 min
-              .and()
+                .and()
                 .withClient("regular")
                 .secret("{noop}regular")
                 .scopes("regular")
@@ -53,7 +58,8 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
                 .tokenStore(tokenStore())
                 .reuseRefreshTokens(false)
                 .tokenEnhancer(tokenConverter())
-                .authenticationManager(authenticationManager);
+                .authenticationManager(authenticationManager)
+                .tokenGranter(tokenGranter(endpoints));
     }
 
     @Bean
@@ -76,5 +82,16 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             }
         });
         return converter;
+    }
+
+    private TokenGranter tokenGranter(AuthorizationServerEndpointsConfigurer endpoints) {
+        List<TokenGranter> granters = new ArrayList<>(List.of(endpoints.getTokenGranter()));
+        granters.add(new PhoneGrant(
+                authenticationManager,
+                endpoints.getTokenServices(),
+                endpoints.getClientDetailsService(),
+                endpoints.getOAuth2RequestFactory()
+        ));
+        return new CompositeTokenGranter(granters);
     }
 }
