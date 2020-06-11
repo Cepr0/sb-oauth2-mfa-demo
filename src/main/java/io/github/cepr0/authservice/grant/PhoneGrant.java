@@ -1,9 +1,9 @@
 package io.github.cepr0.authservice.grant;
 
+import io.github.cepr0.authservice.dto.OtpTokenEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.common.exceptions.InvalidGrantException;
 import org.springframework.security.oauth2.provider.*;
 import org.springframework.security.oauth2.provider.token.AbstractTokenGranter;
@@ -14,17 +14,21 @@ import java.util.Map;
 
 public class PhoneGrant extends AbstractTokenGranter {
 
-    public static final String GRANT_TYPE = "phone";
+    private static final String GRANT_TYPE = "phone";
+
     private final AuthenticationManager authenticationManager;
+    private final ApplicationEventPublisher eventPublisher;
 
     public PhoneGrant(
             AuthenticationManager authenticationManager,
             AuthorizationServerTokenServices tokenServices,
             ClientDetailsService clientDetailsService,
-            OAuth2RequestFactory requestFactory
+            OAuth2RequestFactory requestFactory,
+            ApplicationEventPublisher eventPublisher
     ) {
         super(tokenServices, clientDetailsService, requestFactory, GRANT_TYPE);
         this.authenticationManager = authenticationManager;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -49,6 +53,7 @@ public class PhoneGrant extends AbstractTokenGranter {
         var token = new UsernamePasswordAuthenticationToken(phoneNumber, "N/A", auth.getAuthorities());
         var authentication = new OAuth2Authentication(oAuth2Request, token);
         var otpToken = getTokenServices().createAccessToken(authentication);
+        eventPublisher.publishEvent(new OtpTokenEvent((String) otpToken.getAdditionalInformation().get("jti")));
         throw new OtpRequiredException(otpToken.getValue());
     }
 }

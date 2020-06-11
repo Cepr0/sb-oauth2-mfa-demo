@@ -1,6 +1,7 @@
 package io.github.cepr0.authservice.config;
 
 import io.github.cepr0.authservice.grant.PhoneGrant;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -30,9 +31,11 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     public static final String TOKEN_KEY = "token-key";
 
     private final AuthenticationManager authenticationManager;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public AuthServerConfig(final AuthenticationManager authenticationManager) {
+    public AuthServerConfig(AuthenticationManager authenticationManager, ApplicationEventPublisher eventPublisher) {
         this.authenticationManager = authenticationManager;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -90,7 +93,8 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
                 authenticationManager,
                 endpoints.getTokenServices(),
                 endpoints.getClientDetailsService(),
-                endpoints.getOAuth2RequestFactory()
+                endpoints.getOAuth2RequestFactory(),
+                eventPublisher
         ));
         return new CompositeTokenGranter(granters);
     }

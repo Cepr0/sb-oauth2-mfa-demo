@@ -7,9 +7,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.map.repository.config.EnableMapRepositories;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 import java.util.List;
 
+@EnableAsync
 @EnableMapRepositories
 @SpringBootApplication
 public class Application {
