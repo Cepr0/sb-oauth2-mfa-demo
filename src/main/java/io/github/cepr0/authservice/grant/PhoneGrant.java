@@ -1,9 +1,12 @@
 package io.github.cepr0.authservice.grant;
 
 import io.github.cepr0.authservice.dto.OtpTokenEvent;
+import io.github.cepr0.authservice.exception.OtpRequiredException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.common.exceptions.InvalidGrantException;
 import org.springframework.security.oauth2.provider.*;
 import org.springframework.security.oauth2.provider.token.AbstractTokenGranter;
@@ -11,9 +14,13 @@ import org.springframework.security.oauth2.provider.token.AuthorizationServerTok
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class PhoneGrant extends AbstractTokenGranter {
 
+    // TODO Move to application props
+    public static final String PRE_AUTH = "PRE_AUTH";
+    private static final GrantedAuthority AUTHORITY = new SimpleGrantedAuthority(PRE_AUTH);
     private static final String GRANT_TYPE = "phone";
 
     private final AuthenticationManager authenticationManager;
@@ -50,7 +57,7 @@ public class PhoneGrant extends AbstractTokenGranter {
         }
 
         var oAuth2Request = getRequestFactory().createOAuth2Request(client, tokenRequest);
-        var token = new UsernamePasswordAuthenticationToken(phoneNumber, "N/A", auth.getAuthorities());
+        var token = new UsernamePasswordAuthenticationToken(phoneNumber, "N/A", Set.of(AUTHORITY));
         var authentication = new OAuth2Authentication(oAuth2Request, token);
         var otpToken = getTokenServices().createAccessToken(authentication);
         eventPublisher.publishEvent(new OtpTokenEvent((String) otpToken.getAdditionalInformation().get("jti")));

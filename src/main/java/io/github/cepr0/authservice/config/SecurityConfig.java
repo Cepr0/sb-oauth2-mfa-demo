@@ -16,7 +16,6 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    public static final String ROLE = "PRE_AUTH";
     private final CustomerRepo customerRepo;
 
     public SecurityConfig(CustomerRepo customerRepo) {
@@ -33,7 +32,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(phoneNumber -> customerRepo.getByPhoneNumber(phoneNumber)
-                .map(customer -> User.withUsername(phoneNumber).password("{noop}N/A").roles(ROLE).build())
+                .map(customer -> User.withUsername(phoneNumber).password("{noop}N/A").roles("USER").build())
                 .orElseThrow(() -> new UsernameNotFoundException("Customer not found"))
         );
     }

@@ -13,13 +13,13 @@ import static java.time.temporal.ChronoUnit.MINUTES;
 @KeySpace("otp")
 public class Otp {
     @Id String tokenId;
-    int otp;
+    int value;
     Instant expiredAt;
 
     @Tolerate
-    public Otp(String tokenId, int otp) {
+    public Otp(String tokenId, int value) {
         this.tokenId = tokenId;
-        this.otp = otp;
+        this.value = value;
         expiredAt = Instant.now().plus(5, MINUTES);
     }
 }

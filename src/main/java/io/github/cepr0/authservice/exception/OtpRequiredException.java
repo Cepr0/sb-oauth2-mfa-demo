@@ -1,4 +1,4 @@
-package io.github.cepr0.authservice.grant;
+package io.github.cepr0.authservice.exception;
 
 import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 
