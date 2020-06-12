@@ -29,8 +29,9 @@ public class OtpService {
     @EventListener
     public void createAndSend(OtpTokenEvent event) {
         String tokenId = event.getTokenId();
+        String phoneNumber = event.getPhoneNumber();
         int otpValue = ThreadLocalRandom.current().nextInt(100000, 1000000);
-        otpRepo.save(new Otp(tokenId, otpValue, Instant.now().plus(OTP_TTL)));
+        otpRepo.save(new Otp(tokenId, phoneNumber, otpValue, Instant.now().plus(OTP_TTL)));
         log.info("[i] OTP sent: '{}'", otpValue);
     }
 }

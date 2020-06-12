@@ -5,8 +5,6 @@ import io.github.cepr0.authservice.exception.OtpRequiredException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.common.exceptions.InvalidGrantException;
 import org.springframework.security.oauth2.provider.*;
 import org.springframework.security.oauth2.provider.token.AbstractTokenGranter;
@@ -14,14 +12,12 @@ import org.springframework.security.oauth2.provider.token.AuthorizationServerTok
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
+import java.util.UUID;
 
 public class PhoneGrant extends AbstractTokenGranter {
 
-    // TODO Move to application props
-    public static final String PRE_AUTH = "PRE_AUTH";
-    private static final GrantedAuthority AUTHORITY = new SimpleGrantedAuthority(PRE_AUTH);
     private static final String GRANT_TYPE = "phone";
+    public static final String NA_PASSWORD = "N/A";
 
     private final AuthenticationManager authenticationManager;
     private final ApplicationEventPublisher eventPublisher;
@@ -43,7 +39,7 @@ public class PhoneGrant extends AbstractTokenGranter {
         Map<String, String> parameters = new HashMap<>(tokenRequest.getRequestParameters());
         String phoneNumber = parameters.get("phone_number");
 
-        Authentication auth = new UsernamePasswordAuthenticationToken(phoneNumber, "N/A");
+        Authentication auth = new UsernamePasswordAuthenticationToken(phoneNumber, NA_PASSWORD);
         ((AbstractAuthenticationToken) auth).setDetails(parameters);
 
         try {
@@ -56,11 +52,8 @@ public class PhoneGrant extends AbstractTokenGranter {
             throw new InvalidGrantException("Could not authenticate user: " + phoneNumber);
         }
 
-        var oAuth2Request = getRequestFactory().createOAuth2Request(client, tokenRequest);
-        var token = new UsernamePasswordAuthenticationToken(phoneNumber, "N/A", Set.of(AUTHORITY));
-        var authentication = new OAuth2Authentication(oAuth2Request, token);
-        var otpToken = getTokenServices().createAccessToken(authentication);
-        eventPublisher.publishEvent(new OtpTokenEvent((String) otpToken.getAdditionalInformation().get("jti")));
-        throw new OtpRequiredException(otpToken.getValue());
+        String otpToken = UUID.randomUUID().toString();
+        eventPublisher.publishEvent(new OtpTokenEvent(otpToken, phoneNumber));
+        throw new OtpRequiredException(otpToken);
     }
 }

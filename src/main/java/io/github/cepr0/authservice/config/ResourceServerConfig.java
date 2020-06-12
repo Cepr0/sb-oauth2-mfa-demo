@@ -11,7 +11,6 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
     @Override
     public void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-                // TODO Add !hasRole('PRE_AUTH')
                 .antMatchers("/api/**").access("#oauth2.hasScope('api')")
                 .antMatchers("/actuator/**").permitAll()
                 .anyRequest().authenticated();

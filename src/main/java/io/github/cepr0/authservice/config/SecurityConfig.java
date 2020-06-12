@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
+import static io.github.cepr0.authservice.grant.PhoneGrant.NA_PASSWORD;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @EnableWebSecurity
@@ -32,7 +33,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(phoneNumber -> customerRepo.getByPhoneNumber(phoneNumber)
-                .map(customer -> User.withUsername(phoneNumber).password("{noop}N/A").roles("USER").build())
+                .map(customer -> User.withUsername(phoneNumber).password("{noop}" + NA_PASSWORD).roles("USER").build())
                 .orElseThrow(() -> new UsernameNotFoundException("Customer not found"))
         );
     }

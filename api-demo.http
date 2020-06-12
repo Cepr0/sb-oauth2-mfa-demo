@@ -1,21 +1,10 @@
-# Health check
-
-GET http://localhost:8080/actuator/health
-
-> {%
-  client.test("Health check", function() {
-    client.assert(response.status === 200, "Response status is 200");
-  });
-%}
-###
-
-# Obtain a short-living token for OTP
+# Obtain an OTP token (and send OTP)
 
 POST http://localhost:8080/oauth/token
 Authorization: Basic client secret
 Content-Type: application/x-www-form-urlencoded
 
-grant_type=phone&scope=otp&phone_number=123456789
+grant_type=phone&scope=api&phone_number=123456789
 
 > {%
   var otpToken = response.body.otp_token;
@@ -34,7 +23,7 @@ POST http://localhost:8080/oauth/token
 Authorization: Basic client secret
 Content-Type: application/x-www-form-urlencoded
 
-grant_type=otp&otp=166050&scope=api&otp_token={{otpToken}}
+grant_type=otp&otp=110537&scope=api&otp_token={{otpToken}}
 
 > {%
   var accessToken = response.body.access_token;
@@ -84,18 +73,14 @@ grant_type=refresh_token&scope=api&refresh_token={{refreshToken}}
 
 ###
 
-# Trying to get a regular token in the usual way should not work
+# Health check
 
-POST http://localhost:8080/oauth/token
-Authorization: Basic client secret
-Content-Type: application/x-www-form-urlencoded
-
-grant_type=password&username=user&password=123456&scope=api
+GET http://localhost:8080/actuator/health
 
 > {%
-client.test("Can't get a regular access token in the usual way", function() {
-  client.assert(response.status === 401, "Response status is 401");
-});
+  client.test("Health check", function() {
+    client.assert(response.status === 200, "Response status is 200");
+  });
 %}
-
 ###
+
