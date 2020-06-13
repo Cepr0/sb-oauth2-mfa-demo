@@ -4,7 +4,7 @@ POST http://localhost:8080/oauth/token
 Authorization: Basic client secret
 Content-Type: application/x-www-form-urlencoded
 
-grant_type=phone&scope=api&phone_number=123456789
+grant_type=otp&phone_number=123456789
 
 > {%
   var otpToken = response.body.otp_token;
@@ -23,7 +23,7 @@ POST http://localhost:8080/oauth/token
 Authorization: Basic client secret
 Content-Type: application/x-www-form-urlencoded
 
-grant_type=otp&otp=110537&scope=api&otp_token={{otpToken}}
+grant_type=otp&otp=690165&scope=api&otp_token={{otpToken}}
 
 > {%
   var accessToken = response.body.access_token;

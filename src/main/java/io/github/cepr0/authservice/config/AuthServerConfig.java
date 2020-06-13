@@ -1,7 +1,6 @@
 package io.github.cepr0.authservice.config;
 
-import io.github.cepr0.authservice.grant.OtpGrant;
-import io.github.cepr0.authservice.grant.PhoneGrant;
+import io.github.cepr0.authservice.grant.OtpGranter;
 import io.github.cepr0.authservice.repo.OtpRepo;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
@@ -45,8 +44,8 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
         clientDetailsService.inMemory()
                 .withClient("client")
                 .secret("{noop}secret")
-                .scopes("otp", "api")
-                .authorizedGrantTypes("phone", "otp", "refresh_token")
+                .scopes("api")
+                .authorizedGrantTypes("otp", "refresh_token")
                 .accessTokenValiditySeconds(60 * 60) // 1 our
                 .refreshTokenValiditySeconds(60 * 60 * 24 * 30) // 30 days
         ;
@@ -76,14 +75,7 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
 
     private TokenGranter tokenGranter(AuthorizationServerEndpointsConfigurer endpoints) {
         List<TokenGranter> granters = new ArrayList<>(List.of(endpoints.getTokenGranter()));
-        granters.add(new PhoneGrant(
-                authenticationManager,
-                endpoints.getTokenServices(),
-                endpoints.getClientDetailsService(),
-                endpoints.getOAuth2RequestFactory(),
-                eventPublisher
-        ));
-        granters.add(new OtpGrant(authenticationManager, endpoints, otpRepo));
+        granters.add(new OtpGranter(authenticationManager, endpoints, eventPublisher, otpRepo));
         return new CompositeTokenGranter(granters);
     }
 }

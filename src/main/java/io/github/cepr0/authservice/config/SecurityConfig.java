@@ -11,7 +11,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import static io.github.cepr0.authservice.grant.PhoneGrant.NA_PASSWORD;
+import static io.github.cepr0.authservice.grant.OtpGranter.NA_PASSWORD;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @EnableWebSecurity

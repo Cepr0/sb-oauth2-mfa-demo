@@ -11,6 +11,6 @@ import java.time.Instant;
 public class Otp {
     @Id String tokenId;
     String phoneNumber;
-    int value;
+    String value;
     Instant expiredAt;
 }
