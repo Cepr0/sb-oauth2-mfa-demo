@@ -1,5 +1,6 @@
 package io.github.cepr0.authservice.config;
 
+import io.github.cepr0.authservice.dto.CustomUserDetails;
 import io.github.cepr0.authservice.repo.CustomerRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -8,10 +9,9 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import static io.github.cepr0.authservice.grant.OtpGranter.NA_PASSWORD;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @EnableWebSecurity
@@ -33,9 +33,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(phoneNumber -> customerRepo.getByPhoneNumber(phoneNumber)
-                .map(customer -> User.withUsername(phoneNumber).password("{noop}" + NA_PASSWORD).roles("USER").build())
+                .map(CustomUserDetails::new)
                 .orElseThrow(() -> new UsernameNotFoundException("Customer not found"))
         );
+    }
+
+    @Bean
+    @Override
+    public UserDetailsService userDetailsServiceBean() throws Exception {
+        return super.userDetailsServiceBean();
     }
 
     @Override

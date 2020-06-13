@@ -7,11 +7,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.map.repository.config.EnableMapRepositories;
-import org.springframework.scheduling.annotation.EnableAsync;
 
 import java.util.List;
+import java.util.UUID;
 
-@EnableAsync
 @EnableMapRepositories
 @SpringBootApplication
 public class Application {
@@ -29,7 +28,11 @@ public class Application {
     @EventListener(ApplicationReadyEvent.class)
     public void onReady() {
         customerRepo.saveAll(List.of(
-           new Customer("123456789", "John Smith")
+           new Customer(
+                   UUID.randomUUID(),
+                   "123456789",
+                   "John Smith"
+           )
         ));
     }
 }
