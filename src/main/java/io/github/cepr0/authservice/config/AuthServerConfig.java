@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
@@ -45,12 +44,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
 
     private final AuthenticationManager authenticationManager;
     private final OtpService otpService;
-    private final UserDetailsService userDetailsService;
 
-    public AuthServerConfig(AuthenticationManager authenticationManager, OtpService otpService, UserDetailsService userDetailsService) {
+    public AuthServerConfig(AuthenticationManager authenticationManager, OtpService otpService) {
         this.authenticationManager = authenticationManager;
         this.otpService = otpService;
-        this.userDetailsService = userDetailsService;
     }
 
     @Override
