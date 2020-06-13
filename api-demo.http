@@ -23,7 +23,7 @@ POST http://localhost:8080/oauth/token
 Authorization: Basic client secret
 Content-Type: application/x-www-form-urlencoded
 
-grant_type=otp&otp=744461&scope=api&otp_token={{otpToken}}
+grant_type=otp&otp=416949&scope=api&otp_token={{otpToken}}
 
 > {%
   var accessToken = response.body.access_token;

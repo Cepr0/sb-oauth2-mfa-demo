@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
@@ -89,12 +88,13 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
         converter.setAccessTokenConverter(new DefaultAccessTokenConverter() {
             @Override
             public OAuth2Authentication extractAuthentication(Map<String, ?> claims) {
-                var authentication = super.extractAuthentication(claims);
+                OAuth2Authentication authentication = super.extractAuthentication(claims);
                 Authentication userAuth = authentication.getUserAuthentication();
+                String phoneNumber = (String) userAuth.getPrincipal();
                 String userId = Optional.ofNullable((String) claims.get("user_id"))
                         .orElseThrow(() -> new IllegalStateException("User id doesn't exists in token"));
-                var userDetails = new User(userId, "N/A", userAuth.getAuthorities());
-                var user = new UsernamePasswordAuthenticationToken(userDetails, "N/A", userAuth.getAuthorities());
+                var userDetails = new CustomUserDetails(userId, phoneNumber, userAuth.getAuthorities());
+                Authentication user = new UsernamePasswordAuthenticationToken(userDetails, "N/A", userAuth.getAuthorities());
                 return new OAuth2Authentication(authentication.getOAuth2Request(), user);
             }
         });
