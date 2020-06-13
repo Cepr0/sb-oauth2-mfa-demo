@@ -1,8 +1,7 @@
 package io.github.cepr0.authservice.config;
 
 import io.github.cepr0.authservice.grant.OtpGranter;
-import io.github.cepr0.authservice.repo.OtpRepo;
-import org.springframework.context.ApplicationEventPublisher;
+import io.github.cepr0.authservice.handler.OtpService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,6 +15,7 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,14 +29,15 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     // https://www.baeldung.com/spring-security-oauth2-jws-jwk#5-creating-a-keystore-file
     public static final String TOKEN_KEY = "token-key";
 
-    private final AuthenticationManager authenticationManager;
-    private final ApplicationEventPublisher eventPublisher;
-    private final OtpRepo otpRepo;
+    // TODO Move to application props
+    private static final Duration OTP_TTL = Duration.ofMinutes(5);
 
-    public AuthServerConfig(AuthenticationManager authenticationManager, ApplicationEventPublisher eventPublisher, OtpRepo otpRepo) {
+    private final AuthenticationManager authenticationManager;
+    private final OtpService otpService;
+
+    public AuthServerConfig(AuthenticationManager authenticationManager, OtpService otpService) {
         this.authenticationManager = authenticationManager;
-        this.eventPublisher = eventPublisher;
-        this.otpRepo = otpRepo;
+        this.otpService = otpService;
     }
 
     @Override
@@ -75,7 +76,7 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
 
     private TokenGranter tokenGranter(AuthorizationServerEndpointsConfigurer endpoints) {
         List<TokenGranter> granters = new ArrayList<>(List.of(endpoints.getTokenGranter()));
-        granters.add(new OtpGranter(authenticationManager, endpoints, eventPublisher, otpRepo));
+        granters.add(new OtpGranter(authenticationManager, endpoints, otpService, OTP_TTL));
         return new CompositeTokenGranter(granters);
     }
 }

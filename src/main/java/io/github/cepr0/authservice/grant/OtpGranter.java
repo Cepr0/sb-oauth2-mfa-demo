@@ -1,10 +1,8 @@
 package io.github.cepr0.authservice.grant;
 
-import io.github.cepr0.authservice.dto.OtpTokenEvent;
 import io.github.cepr0.authservice.exception.OtpRequiredException;
+import io.github.cepr0.authservice.handler.OtpService;
 import io.github.cepr0.authservice.model.Otp;
-import io.github.cepr0.authservice.repo.OtpRepo;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,7 +16,7 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.TokenRequest;
 import org.springframework.security.oauth2.provider.token.AbstractTokenGranter;
 
-import java.time.Instant;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -28,19 +26,19 @@ public class OtpGranter extends AbstractTokenGranter {
     private static final String GRANT_TYPE = "otp";
 
     private final AuthenticationManager authenticationManager;
-    private final ApplicationEventPublisher eventPublisher;
-    private final OtpRepo otpRepo;
+    private final OtpService otpService;
+    private final Duration otpDuration;
 
     public OtpGranter(
             @NonNull AuthenticationManager authenticationManager,
             @NonNull AuthorizationServerEndpointsConfigurer endpoints,
-            @NonNull ApplicationEventPublisher eventPublisher,
-            @NonNull OtpRepo otpRepo
+            @NonNull OtpService otpService,
+            @NonNull Duration otpDuration
     ) {
         super(endpoints.getTokenServices(), endpoints.getClientDetailsService(), endpoints.getOAuth2RequestFactory(), GRANT_TYPE);
         this.authenticationManager = authenticationManager;
-        this.eventPublisher = eventPublisher;
-        this.otpRepo = otpRepo;
+        this.otpService = otpService;
+        this.otpDuration = otpDuration;
     }
 
     @Override
@@ -58,7 +56,7 @@ public class OtpGranter extends AbstractTokenGranter {
         if (phoneNumber != null) {
             authenticate(phoneNumber);
             String newOtpToken = UUID.randomUUID().toString();
-            eventPublisher.publishEvent(new OtpTokenEvent(newOtpToken, phoneNumber));
+            otpService.createAndSend(newOtpToken, phoneNumber, otpDuration);
             throw new OtpRequiredException(newOtpToken);
         }
 
@@ -66,7 +64,7 @@ public class OtpGranter extends AbstractTokenGranter {
         if (otpValue == null) throw new InvalidRequestException("Missing OTP value");
         if (otpToken == null) throw new InvalidRequestException("Missing OTP token");
 
-        Otp otp = findOtp(otpToken);
+        Otp otp = otpService.findAndRemove(otpToken);
         if (!otpValue.equals(otp.getValue())) {
             throw new InvalidGrantException("OTP is mismatched");
         }
@@ -87,13 +85,5 @@ public class OtpGranter extends AbstractTokenGranter {
         } catch (AuthenticationException e) {
             throw new InvalidGrantException(e.getMessage());
         }
-    }
-
-    private Otp findOtp(String tokenId) {
-        Otp otp = otpRepo.findById(tokenId).orElseThrow(() -> new InvalidGrantException("OTP token not found"));
-        if (otp.getExpiredAt().isBefore(Instant.now())) {
-            throw new InvalidGrantException("OTP is expired");
-        }
-        return otp;
     }
 }
