@@ -11,9 +11,9 @@ public interface OtpService {
      * Creates and stores {@link Otp} with the given duration.
      * Then sends OTP to the given phone number.
      *
-     * @param otpToken must not be null
+     * @param otpToken    must not be null
      * @param phoneNumber must not be null
-     * @param duration must not be null
+     * @param duration    must not be null
      */
     void createAndSend(String otpToken, String phoneNumber, Duration duration);
 

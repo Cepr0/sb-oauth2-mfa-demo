@@ -1,7 +1,7 @@
 # Obtain an OTP token (and send OTP)
 
 POST http://localhost:8080/oauth/token
-Authorization: Basic client secret
+Authorization: Basic mobile-client secret
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=otp&phone_number=123456789
@@ -20,10 +20,10 @@ grant_type=otp&phone_number=123456789
 # Exchange OTP for a regular tokens
 
 POST http://localhost:8080/oauth/token
-Authorization: Basic client secret
+Authorization: Basic mobile-client secret
 Content-Type: application/x-www-form-urlencoded
 
-grant_type=otp&otp=416949&scope=api&otp_token={{otpToken}}
+grant_type=otp&otp=626599&scope=api&otp_token={{otpToken}}
 
 > {%
   var accessToken = response.body.access_token;
@@ -55,7 +55,7 @@ Accept: application/json
 # Refresh regular tokens
 
 POST http://localhost:8080/oauth/token
-Authorization: Basic client secret
+Authorization: Basic mobile-client secret
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=refresh_token&scope=api&refresh_token={{refreshToken}}

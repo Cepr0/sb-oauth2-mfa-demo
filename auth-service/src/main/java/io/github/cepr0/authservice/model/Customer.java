@@ -4,13 +4,15 @@ import lombok.Value;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.keyvalue.annotation.KeySpace;
 
-import java.time.Instant;
+import java.util.Set;
+import java.util.UUID;
 
 @Value
-@KeySpace("otp")
-public class Otp {
-    @Id String tokenId;
+@KeySpace("customers")
+public class Customer {
+    @Id
+    UUID id;
     String phoneNumber;
-    String value;
-    Instant expiredAt;
+    String name;
+    Set<String> roles = Set.of("USER");
 }

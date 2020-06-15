@@ -1,0 +1,12 @@
+logging:
+  level:
+    org.springframework:
+      security: debug
+      web: debug
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          public-key-location:

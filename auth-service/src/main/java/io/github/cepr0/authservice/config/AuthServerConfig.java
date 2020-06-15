@@ -1,10 +1,16 @@
 package io.github.cepr0.authservice.config;
 
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.KeyUse;
+import com.nimbusds.jose.jwk.RSAKey;
 import io.github.cepr0.authservice.dto.CustomUserDetails;
 import io.github.cepr0.authservice.grant.OtpGranter;
 import io.github.cepr0.authservice.handler.OtpService;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.Resource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -22,44 +28,39 @@ import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
+import org.springframework.security.oauth2.provider.token.store.KeyStoreKeyFactory;
 
-import java.time.Duration;
+import java.security.KeyPair;
+import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 @Configuration
+@EnableConfigurationProperties(AuthServerProps.class)
 @EnableAuthorizationServer
 public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
 
-    // TODO Move to application props
-    // TODO Replace with JWKs
-    // https://docs.spring.io/spring-security-oauth2-boot/docs/2.2.x/reference/htmlsingle/#oauth2-boot-authorization-server-spring-security-oauth2-resource-server
-    // https://www.baeldung.com/spring-security-oauth2-jws-jwk#5-creating-a-keystore-file
-    public static final String TOKEN_KEY = "token-key";
-
-    // TODO Move to application props
-    private static final Duration OTP_TTL = Duration.ofMinutes(5);
-
+    private final AuthServerProps props;
     private final AuthenticationManager authenticationManager;
     private final OtpService otpService;
 
-    public AuthServerConfig(AuthenticationManager authenticationManager, OtpService otpService) {
+    public AuthServerConfig(AuthServerProps props, AuthenticationManager authenticationManager, OtpService otpService) {
+        this.props = props;
         this.authenticationManager = authenticationManager;
         this.otpService = otpService;
     }
 
     @Override
     public void configure(ClientDetailsServiceConfigurer clientDetailsService) throws Exception {
-        clientDetailsService.inMemory()
-                .withClient("client")
-                .secret("{noop}secret")
-                .scopes("api")
-                .authorizedGrantTypes("otp", "refresh_token")
-                .accessTokenValiditySeconds(60 * 60) // 1 our
-                .refreshTokenValiditySeconds(60 * 60 * 24 * 30) // 30 days
-        ;
+        var builder = clientDetailsService.inMemory();
+        props.getClients().forEach((clientId, client) -> builder.withClient(clientId)
+                .secret("{noop}" + client.getClientSecret())
+                .scopes(client.getScopes())
+                .authorizedGrantTypes(client.getAuthorizedGrantTypes())
+                .accessTokenValiditySeconds((int) client.getAccessTokenValidity().toSeconds())
+                .refreshTokenValiditySeconds((int) client.getRefreshTokenValidity().toSeconds()));
     }
 
     @Override
@@ -80,8 +81,8 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
 
     @Bean
     public JwtAccessTokenConverter tokenConverter() {
-        var converter = new JwtAccessTokenConverter();
-        converter.setSigningKey(TOKEN_KEY);
+        Map<String, String> customHeaders = Map.of("kid", props.getJwt().getKid());
+        var converter = new JwtCustomHeadersAccessTokenConverter(customHeaders, keyPair());
         converter.setAccessTokenConverter(new DefaultAccessTokenConverter() {
             @Override
             public OAuth2Authentication extractAuthentication(Map<String, ?> claims) {
@@ -98,9 +99,24 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
         return converter;
     }
 
+    @Bean
+    public KeyPair keyPair() {
+        Resource ksFile = props.getJwt().getKeyStore();
+        KeyStoreKeyFactory ksFactory = new KeyStoreKeyFactory(ksFile, props.getJwt().getKeyStorePassword().toCharArray());
+        return ksFactory.getKeyPair(props.getJwt().getKeyAlias());
+    }
+
+    @Bean
+    public JWKSet jwkSet() {
+        RSAKey.Builder builder = new RSAKey.Builder((RSAPublicKey) keyPair().getPublic()).keyUse(KeyUse.SIGNATURE)
+                .algorithm(JWSAlgorithm.RS256)
+                .keyID(props.getJwt().getKid());
+        return new JWKSet(builder.build());
+    }
+
     private TokenGranter tokenGranter(AuthorizationServerEndpointsConfigurer endpoints) {
         List<TokenGranter> granters = new ArrayList<>(List.of(endpoints.getTokenGranter()));
-        granters.add(new OtpGranter(authenticationManager, endpoints, otpService, OTP_TTL));
+        granters.add(new OtpGranter(authenticationManager, endpoints, otpService, props.getOtp().getTtl()));
         return new CompositeTokenGranter(granters);
     }
 

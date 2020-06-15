@@ -28,11 +28,16 @@ public class Application {
     @EventListener(ApplicationReadyEvent.class)
     public void onReady() {
         customerRepo.saveAll(List.of(
-           new Customer(
-                   UUID.randomUUID(),
-                   "123456789",
-                   "John Smith"
-           )
+                new Customer(
+                        UUID.fromString("fcc8cece-d464-4b7b-8925-b13f0461f263"),
+                        "123456789",
+                        "John Smith"
+                ),
+                new Customer(
+                        UUID.fromString("61a9971a-ef28-4b65-8308-72b475a68f63"),
+                        "987654321",
+                        "Joan Doe"
+                )
         ));
     }
 }

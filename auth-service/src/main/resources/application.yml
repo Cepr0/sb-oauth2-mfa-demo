@@ -1,0 +1,25 @@
+logging:
+  level:
+    org.springframework:
+      security: debug
+      web: debug
+
+auth:
+  otp:
+    ttl: 5m
+  jwt:
+    kid: demo-key-id
+    key-store: file:keys/demo.jks
+    key-alias: demo
+    key-password: 123456
+    key-store-password: 123456
+  clients:
+    mobile-client:
+      client-secret: secret
+      scopes: api
+      authorized-grant-types: otp, refresh_token
+    web-client:
+      client-secret: secret
+      scopes: api
+      authorized-grant-types: otp, refresh_token
+

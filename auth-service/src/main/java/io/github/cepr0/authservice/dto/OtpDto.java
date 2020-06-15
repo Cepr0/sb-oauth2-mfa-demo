@@ -7,5 +7,7 @@ import javax.validation.constraints.Min;
 
 @Value
 public class OtpDto {
-    @Min(100000) @Max(999999) int otp;
+    @Min(100000)
+    @Max(999999)
+    int otp;
 }
