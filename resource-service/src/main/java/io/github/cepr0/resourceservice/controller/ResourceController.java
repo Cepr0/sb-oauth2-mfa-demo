@@ -1,13 +1,14 @@
 package io.github.cepr0.resourceservice.controller;
 
+import io.github.cepr0.resourceservice.model.Resource;
 import io.github.cepr0.resourceservice.repo.ResourceRepo;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/resources")
@@ -20,8 +21,7 @@ public class ResourceController {
     }
 
     @GetMapping
-    public Object getAll(@AuthenticationPrincipal Jwt jwt) {
-//        return resourceRepo.findByCustomerId(customerId);
-        return Map.of("key", "value");
+    public List<Resource> getAll(@AuthenticationPrincipal(expression = "claims['sub']") String sub) {
+        return resourceRepo.findByCustomerId(UUID.fromString(sub));
     }
 }

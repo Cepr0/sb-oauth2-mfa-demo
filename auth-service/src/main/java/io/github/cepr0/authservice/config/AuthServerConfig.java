@@ -9,8 +9,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.Resource;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
@@ -20,7 +18,6 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.provider.CompositeTokenGranter;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.TokenGranter;
-import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
@@ -31,7 +28,6 @@ import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 // https://docs.spring.io/spring-security-oauth2-boot/docs/2.2.x/reference/htmlsingle/#oauth2-boot-authorization-server-spring-security-oauth2-resource-server
 // https://www.baeldung.com/spring-security-oauth2-jws-jwk#6-adding-the-keystore-file-to-our-application
@@ -39,6 +35,8 @@ import java.util.Optional;
 @EnableConfigurationProperties(AuthServerProps.class)
 @Import(AuthorizationServerEndpointsConfiguration.class)
 public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
+
+    private static final String SUB_CLAIM = "sub";
 
     private final AuthServerProps props;
     private final AuthenticationManager authenticationManager;
@@ -79,21 +77,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
 
     @Bean
     public JwtAccessTokenConverter tokenConverter() {
-        Map<String, String> customHeaders = Map.of("kid", props.getJwt().getKid());
-        var converter = new JwtCustomHeadersAccessTokenConverter(customHeaders, keyPair());
-        converter.setAccessTokenConverter(new DefaultAccessTokenConverter() {
-            @Override
-            public OAuth2Authentication extractAuthentication(Map<String, ?> claims) {
-                OAuth2Authentication authentication = super.extractAuthentication(claims);
-                Authentication userAuth = authentication.getUserAuthentication();
-                String phoneNumber = (String) userAuth.getPrincipal();
-                String userId = Optional.ofNullable((String) claims.get("user_id"))
-                        .orElseThrow(() -> new IllegalStateException("User id doesn't exists in token"));
-                var userDetails = new CustomUserDetails(userId, phoneNumber, userAuth.getAuthorities());
-                Authentication user = new UsernamePasswordAuthenticationToken(userDetails, "N/A", userAuth.getAuthorities());
-                return new OAuth2Authentication(authentication.getOAuth2Request(), user);
-            }
-        });
+        // Map<String, String> customHeaders = Map.of("kid", props.getJwt().getKid());
+        // return new JwtCustomHeadersAccessTokenConverter(customHeaders, keyPair());
+        JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
+        converter.setKeyPair(keyPair());
         return converter;
     }
 
@@ -115,7 +102,7 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
             if (accessToken instanceof DefaultOAuth2AccessToken) {
                 String userId = customUserDetails.getUserId();
-                ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(Map.of("user_id", userId));
+                ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(Map.of(SUB_CLAIM, userId));
             }
         }
         return accessToken;

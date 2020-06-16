@@ -7,7 +7,6 @@ logging:
       security: debug
       web: debug
 
-
 auth:
   otp:
     ttl: 5m

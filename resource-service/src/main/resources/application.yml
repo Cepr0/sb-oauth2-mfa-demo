@@ -14,8 +14,3 @@ spring:
         jwt:
           jwk-set-uri: http://localhost:8081/.well-known/jwks.json
 
-security:
-  oauth2:
-    resource:
-      jwk:
-        key-set-uri: http://localhost:8081/.well-known/jwks.json
