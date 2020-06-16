@@ -1,3 +1,6 @@
+server:
+  port: 8082
+
 logging:
   level:
     org.springframework:
@@ -9,4 +12,10 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          public-key-location:
+          jwk-set-uri: http://localhost:8081/.well-known/jwks.json
+
+security:
+  oauth2:
+    resource:
+      jwk:
+        key-set-uri: http://localhost:8081/.well-known/jwks.json
