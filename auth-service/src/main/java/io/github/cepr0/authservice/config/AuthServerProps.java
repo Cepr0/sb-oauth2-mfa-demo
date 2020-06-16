@@ -10,7 +10,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.Duration;
-import java.util.Collections;
 import java.util.Map;
 
 @Getter
@@ -20,16 +19,22 @@ import java.util.Map;
 public class AuthServerProps {
 
     @Valid
-    private Otp otp = new Otp();
+    @NotNull
+    private Otp otp;
 
     @Valid
-    private Jwt jwt = getJwt();
+    @NotNull
+    private Jwt jwt;
 
-    @NotEmpty private Map<String, Client> clients = Collections.emptyMap();
+    @NotEmpty
+    private Map<String, Client> clients;
 
     @Getter
     @Setter
     public static class Otp {
+        /**
+         * Time to live of OTP.
+         */
         private Duration ttl = Duration.ofMinutes(5);
     }
 
@@ -65,10 +70,29 @@ public class AuthServerProps {
     @Getter
     @Setter
     public static class Client {
+        /**
+         * Client secret.
+         */
         @NotEmpty private String clientSecret;
+
+        /**
+         * Collection of the client scopes.
+         */
         @NotEmpty private String[] scopes;
+
+        /**
+         * Collection of the client authorized grants.
+         */
         @NotEmpty private String[] authorizedGrantTypes;
+
+        /**
+         * Access token validity, defaults to 1 hour.
+         */
         @NotNull private Duration accessTokenValidity = Duration.ofHours(1);
+
+        /**
+         * Refresh token validity, defaults to 30 days.
+         */
         @NotNull private Duration refreshTokenValidity = Duration.ofDays(30);
     }
 }

@@ -1,15 +1,12 @@
 package io.github.cepr0.authservice.config;
 
-import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.KeyUse;
-import com.nimbusds.jose.jwk.RSAKey;
 import io.github.cepr0.authservice.dto.CustomUserDetails;
 import io.github.cepr0.authservice.grant.OtpGranter;
 import io.github.cepr0.authservice.handler.OtpService;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.io.Resource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,7 +15,7 @@ import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
+import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerEndpointsConfiguration;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.provider.CompositeTokenGranter;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
@@ -31,15 +28,16 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.security.oauth2.provider.token.store.KeyStoreKeyFactory;
 
 import java.security.KeyPair;
-import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+// https://docs.spring.io/spring-security-oauth2-boot/docs/2.2.x/reference/htmlsingle/#oauth2-boot-authorization-server-spring-security-oauth2-resource-server
+// https://www.baeldung.com/spring-security-oauth2-jws-jwk#6-adding-the-keystore-file-to-our-application
 @Configuration
 @EnableConfigurationProperties(AuthServerProps.class)
-@EnableAuthorizationServer
+@Import(AuthorizationServerEndpointsConfiguration.class)
 public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
 
     private final AuthServerProps props;
@@ -104,14 +102,6 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
         Resource ksFile = props.getJwt().getKeyStore();
         KeyStoreKeyFactory ksFactory = new KeyStoreKeyFactory(ksFile, props.getJwt().getKeyStorePassword().toCharArray());
         return ksFactory.getKeyPair(props.getJwt().getKeyAlias());
-    }
-
-    @Bean
-    public JWKSet jwkSet() {
-        RSAKey.Builder builder = new RSAKey.Builder((RSAPublicKey) keyPair().getPublic()).keyUse(KeyUse.SIGNATURE)
-                .algorithm(JWSAlgorithm.RS256)
-                .keyID(props.getJwt().getKid());
-        return new JWKSet(builder.build());
     }
 
     private TokenGranter tokenGranter(AuthorizationServerEndpointsConfigurer endpoints) {

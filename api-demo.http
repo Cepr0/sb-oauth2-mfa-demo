@@ -1,5 +1,4 @@
 # Obtain an OTP token (and send OTP)
-
 POST http://localhost:8080/oauth/token
 Authorization: Basic mobile-client secret
 Content-Type: application/x-www-form-urlencoded
@@ -18,12 +17,11 @@ grant_type=otp&phone_number=123456789
 ###
 
 # Exchange OTP for a regular tokens
-
 POST http://localhost:8080/oauth/token
 Authorization: Basic mobile-client secret
 Content-Type: application/x-www-form-urlencoded
 
-grant_type=otp&otp=626599&scope=api&otp_token={{otpToken}}
+grant_type=otp&otp=642641&scope=api&otp_token={{otpToken}}
 
 > {%
   var accessToken = response.body.access_token;
@@ -39,7 +37,6 @@ grant_type=otp&otp=626599&scope=api&otp_token={{otpToken}}
 ###
 
 # Get some resources
-
 GET http://localhost:8080/api/resources
 Authorization: Bearer {{accessToken}}
 Accept: application/json
@@ -53,7 +50,6 @@ Accept: application/json
 ###
 
 # Refresh regular tokens
-
 POST http://localhost:8080/oauth/token
 Authorization: Basic mobile-client secret
 Content-Type: application/x-www-form-urlencoded
@@ -74,7 +70,6 @@ grant_type=refresh_token&scope=api&refresh_token={{refreshToken}}
 ###
 
 # Health check
-
 GET http://localhost:8080/actuator/health
 
 > {%
@@ -82,5 +77,16 @@ GET http://localhost:8080/actuator/health
     client.assert(response.status === 200, "Response status is 200");
   });
 %}
+
 ###
 
+# JWK set access
+GET http://localhost:8080/.well-known/jwks.json
+
+> {%
+  client.test("Check JWK set endpoint access", function() {
+    client.assert(response.status === 200, "Response status is 200");
+  });
+%}
+
+###
