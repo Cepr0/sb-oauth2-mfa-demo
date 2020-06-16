@@ -1,7 +1,6 @@
 # Obtain an OTP token (and send OTP)
-
-POST http://localhost:8080/oauth/token
-Authorization: Basic client secret
+POST http://localhost:8081/oauth/token
+Authorization: Basic mobile-client secret
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=otp&phone_number=123456789
@@ -18,12 +17,11 @@ grant_type=otp&phone_number=123456789
 ###
 
 # Exchange OTP for a regular tokens
-
-POST http://localhost:8080/oauth/token
-Authorization: Basic client secret
+POST http://localhost:8081/oauth/token
+Authorization: Basic mobile-client secret
 Content-Type: application/x-www-form-urlencoded
 
-grant_type=otp&otp=416949&scope=api&otp_token={{otpToken}}
+grant_type=otp&otp=982890&scope=api&otp_token={{otpToken}}
 
 > {%
   var accessToken = response.body.access_token;
@@ -39,8 +37,7 @@ grant_type=otp&otp=416949&scope=api&otp_token={{otpToken}}
 ###
 
 # Get some resources
-
-GET http://localhost:8080/api/resources
+GET http://localhost:8082/api/resources
 Authorization: Bearer {{accessToken}}
 Accept: application/json
 
@@ -53,9 +50,8 @@ Accept: application/json
 ###
 
 # Refresh regular tokens
-
-POST http://localhost:8080/oauth/token
-Authorization: Basic client secret
+POST http://localhost:8081/oauth/token
+Authorization: Basic mobile-client secret
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=refresh_token&scope=api&refresh_token={{refreshToken}}
@@ -73,14 +69,35 @@ grant_type=refresh_token&scope=api&refresh_token={{refreshToken}}
 
 ###
 
-# Health check
-
-GET http://localhost:8080/actuator/health
+# Auth-service health check
+GET http://localhost:8081/actuator/health
 
 > {%
-  client.test("Health check", function() {
+  client.test("Auth-service health check", function() {
     client.assert(response.status === 200, "Response status is 200");
   });
 %}
+
 ###
 
+# Resource-service health check
+GET http://localhost:8082/actuator/health
+
+> {%
+  client.test("Auth-service health check", function() {
+    client.assert(response.status === 200, "Response status is 200");
+  });
+%}
+
+###
+
+# JWK set access
+GET http://localhost:8081/.well-known/jwks.json
+
+> {%
+  client.test("Check JWK set endpoint access", function() {
+    client.assert(response.status === 200, "Response status is 200");
+  });
+%}
+
+###
