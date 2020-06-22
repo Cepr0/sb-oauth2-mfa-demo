@@ -10,6 +10,7 @@ logging:
 auth:
   otp:
     ttl: 5m
+    type: constant
   jwt:
     kid: demo-key-id
     key-store: file:keys/demo.jks

@@ -1,4 +1,4 @@
-package io.github.cepr0.authservice.handler;
+package io.github.cepr0.authservice.service;
 
 import io.github.cepr0.authservice.model.Otp;
 import org.springframework.security.oauth2.common.exceptions.InvalidGrantException;

@@ -36,6 +36,11 @@ public class AuthServerProps {
          * Time to live of OTP.
          */
         private Duration ttl = Duration.ofMinutes(5);
+
+        /**
+         * OTP type, defaults to constant.
+         */
+        private OtpType type = OtpType.constant;
     }
 
     @Getter
@@ -94,5 +99,9 @@ public class AuthServerProps {
          * Refresh token validity, defaults to 30 days.
          */
         @NotNull private Duration refreshTokenValidity = Duration.ofDays(30);
+    }
+
+    public enum OtpType {
+        constant, random
     }
 }

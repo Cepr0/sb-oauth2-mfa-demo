@@ -1,8 +1,8 @@
 package io.github.cepr0.authservice.grant;
 
 import io.github.cepr0.authservice.exception.OtpRequiredException;
-import io.github.cepr0.authservice.handler.OtpService;
 import io.github.cepr0.authservice.model.Otp;
+import io.github.cepr0.authservice.service.OtpService;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

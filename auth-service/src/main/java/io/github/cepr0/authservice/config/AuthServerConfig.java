@@ -2,7 +2,7 @@ package io.github.cepr0.authservice.config;
 
 import io.github.cepr0.authservice.dto.CustomUserDetails;
 import io.github.cepr0.authservice.grant.OtpGranter;
-import io.github.cepr0.authservice.handler.OtpService;
+import io.github.cepr0.authservice.service.OtpService;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -12,7 +12,6 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @EnableWebSecurity
-// @EnableConfigurationProperties(OAuth2ResourceServerProperties.class)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final OAuth2ResourceServerProperties props;

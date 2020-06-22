@@ -21,7 +21,7 @@ POST http://localhost:8081/oauth/token
 Authorization: Basic mobile-client secret
 Content-Type: application/x-www-form-urlencoded
 
-grant_type=otp&otp=982890&scope=api&otp_token={{otpToken}}
+grant_type=otp&otp=123456&scope=api&otp_token={{otpToken}}
 
 > {%
   var accessToken = response.body.access_token;
